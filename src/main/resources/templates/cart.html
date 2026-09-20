@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie Express - Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a th:href="@{/}" class="flex items-center space-x-2">
+                <i class="fa-solid fa-utensils text-2xl text-red-500"></i>
+                <span class="text-2xl font-bold text-gray-900">Foodie<span class="text-red-500">Express</span></span>
+            </a>
+            <div class="space-x-6 text-gray-600 font-medium hidden md:flex">
+                <a th:href="@{/}" class="hover:text-red-500 transition">Home</a>
+                <a th:href="@{/menu}" class="hover:text-red-500 transition">Menu</a>
+                <a th:href="@{/orders}" class="hover:text-red-500 transition">My Orders</a>
+            </div>
+            <a th:href="@{/cart}" class="bg-red-500 text-white px-5 py-2 rounded-full font-medium flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-shopping-cart"></i> Cart
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Your Cart</h2>
+            <a th:href="@{/menu}" class="text-red-500 font-semibold hover:text-red-600">Continue Shopping</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(cartItems)}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+            <i class="fa-solid fa-cart-shopping text-5xl text-red-200 mb-5"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Your Cart is Empty</h3>
+            <p class="text-gray-500 mb-8">Add your favorite dishes from the menu.</p>
+            <a th:href="@{/menu}" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-8 py-3 rounded-xl inline-flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-utensils"></i> Browse Menu
+            </a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(cartItems)}" class="space-y-4">
+            <div th:each="food : ${cartItems}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between gap-4">
+                <div>
+                    <h3 th:text="${food.foodName}" class="text-xl font-bold text-gray-800">Food Item</h3>
+                    <span th:text="'₹' + ${food.price}" class="text-lg font-bold text-red-500">₹0</span>
+                </div>
+                <form th:action="@{/cart/remove/{id}(id=${food.id})}" method="post">
+                    <button type="submit" class="text-red-500 hover:text-red-700 px-3 py-2" title="Remove from cart">
+                        <i class="fa-solid fa-trash-can text-lg"></i>
+                    </button>
+                </form>
+            </div>
+            <form th:action="@{/cart/place-order}" method="post" class="pt-4">
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl flex justify-center items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-check"></i> Place Order
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm mt-auto">
+        <p>&copy; 2026 FoodieExpress. All rights reserved.</p>
+    </footer>
+</body>
+</html>
