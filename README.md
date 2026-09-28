@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # UAM Hub
 
 UAM Hub is a Spring Boot operations dashboard for managing a modern urban air mobility network. It brings together drone fleet administration, landing pad monitoring, air corridor tracking, docking workflows, and financial reporting in a single command center.
@@ -74,3 +75,52 @@ Add screenshots of the following views:
 ## Notes
 
 This project is designed as an internal operations dashboard with a realistic UAM workflow around drone logistics, airspace control, and financial operations.
+=======
+# SpringJPA - Foodie Express
+
+Spring Boot + Spring Data JPA + MySQL + Thymeleaf food ordering application.
+
+## Requirements
+- Java 25
+- MySQL Server 8.0 running as `MySQL80`
+
+## Run on Windows (recommended)
+1. Make sure MySQL Server is running.
+2. Make sure the database user is `root` and know its password.
+3. Double-click `run-local.bat`, or from PowerShell run:
+
+```powershell
+.\run-local.bat
+```
+
+The script asks for the MySQL root password and does **not** save it in the project.
+
+The JDBC URL uses `createDatabaseIfNotExist=true`, so MySQL can create `fooddb` automatically when the root account has permission to create databases.
+
+The application starts on:
+
+`http://localhost:8080`
+
+## Manual PowerShell run
+
+```powershell
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="YOUR_MYSQL_PASSWORD"
+.\mvnw.cmd clean spring-boot:run
+```
+
+Do not commit the password or put it in `application.properties`.
+
+## API endpoints
+- `GET /api/food`
+- `GET /api/food/{id}`
+- `POST /api/food`
+- `PUT /api/food/{id}`
+- `DELETE /api/food/{id}`
+
+## Web pages
+- `/`
+- `/menu`
+- `/cart`
+- `/orders`
+>>>>>>> 53f02a9ff30790ab5ffb4701bd68ec5caefb4573

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie Express - My Orders</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-utensils text-2xl text-red-500"></i>
+                <span class="text-2xl font-bold text-gray-900">Foodie<span class="text-red-500">Express</span></span>
+            </div>
+            <div class="space-x-6 text-gray-600 font-medium hidden md:flex">
+                <a th:href="@{/}" class="hover:text-red-500 transition">Home</a>
+                <a th:href="@{/menu}" class="hover:text-red-500 transition">Menu</a>
+                <a th:href="@{/orders}" class="text-red-500 font-bold">My Orders</a>
+            </div>
+            <a th:href="@{/cart}" class="bg-red-500 text-white px-5 py-2 rounded-full font-medium hover:bg-red-600 transition flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-shopping-cart"></i> Cart
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Your Order History</h2>
+
+        <div th:if="${#lists.isEmpty(orders)}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+            <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <i class="fa-solid fa-bag-shopping text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">No Active Orders Yet</h3>
+            <p class="text-gray-500 max-w-md mx-auto mb-8">You haven't placed any food orders. Explore our delicious menu items and order your favorite meals now!</p>
+            
+            <a th:href="@{/menu}" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-8 py-3 rounded-xl transition inline-flex items-center gap-2 shadow-md hover:shadow-lg">
+                <i class="fa-solid fa-utensils"></i> Browse Menu
+            </a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(orders)}" class="space-y-4">
+            <div th:each="food : ${orders}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+                <div>
+                    <h3 th:text="${food.foodName}" class="text-xl font-bold text-gray-800">Food Item</h3>
+                    <p class="text-gray-500 text-sm">Freshly prepared dish.</p>
+                </div>
+                <span th:text="'₹' + ${food.price}" class="text-lg font-bold text-red-500">₹0</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-6 text-center text-sm mt-auto">
+        <p>&copy; 2026 FoodieExpress. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
