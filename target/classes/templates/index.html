@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Operations Command Center')}"></head>
+<body class="app-layout">
+    <!-- Fixed Left Sidebar for Navigation -->
+    <aside th:replace="~{fragments/layout :: sidebar('dashboard')}"></aside>
+
+    <!-- Main Content Area on the Right -->
+    <main class="main-content">
+        <!-- Top of the Main Content Area: Page Title + Context Info -->
+        <header class="page-topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">Operations Command Center</h1>
+                <p class="page-subtitle">Real-time vertiport telemetry, flight airway corridors, fleet tracking, and financial summary</p>
+            </div>
+            <div class="topbar-right">
+                <div class="system-context-info">
+                    <span class="context-pill"><span class="status-dot"></span> LIVE TELEMETRY</span>
+                    <span class="context-divider">|</span>
+                    <span class="context-date" id="live-date">--</span>
+                    <span class="context-divider">&bull;</span>
+                    <span class="context-clock font-mono" id="live-clock">--:--:-- UTC</span>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/docking}" class="btn btn-primary">⚡ Express Check-In</a>
+                    <a th:href="@{/landing-pads}" class="btn btn-secondary">+ Manage Pads</a>
+                    <a th:href="@{/drones}" class="btn btn-secondary">+ Register Drone</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Metric Summary Cards -->
+        <section class="metrics-row" aria-label="Operational Metrics">
+            <div class="metric-card">
+                <div class="metric-icon cyan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Active Fleet</span>
+                    <div class="metric-value font-mono">
+                        <span th:text="${activeDronesCount}">0</span>
+                        <span class="metric-sub" th:text="'/ ' + ${totalDrones} + ' total'">/ 0 total</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon emerald">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 12h10M12 7v10"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Available Pads</span>
+                    <div class="metric-value font-mono">
+                        <span th:text="${availablePadsCount}">0</span>
+                        <span class="metric-sub" th:text="'/ ' + ${totalPads} + ' pads'">/ 0 pads</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon amber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Active Corridors</span>
+                    <div class="metric-value font-mono">
+                        <span th:text="${activeZonesCount}">0</span>
+                        <span class="metric-sub" th:text="'/ ' + ${totalZones} + ' zones'">/ 0 zones</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Active Dockings</span>
+                    <div class="metric-value font-mono">
+                        <span th:text="${activeDockingCount}">0</span>
+                        <span class="metric-sub">in session</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon emerald">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Total Revenue</span>
+                    <span class="metric-value font-mono" th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Net Margin</span>
+                    <span class="metric-value font-mono" th:text="'$' + ${#numbers.formatDecimal(netProfit, 1, 'COMMA', 2, 'POINT')}">$0.00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Split Layout -->
+        <div class="dashboard-grid">
+            <!-- Left Panel: Radar Visualizer & Corridors -->
+            <section class="panel radar-section">
+                <div class="panel-header">
+                    <div>
+                        <h2>Air Corridor Tracking Radar</h2>
+                        <p class="panel-subtitle">Real-time airway corridor altitude &amp; telemetry monitoring</p>
+                    </div>
+                    <a th:href="@{/airspace}" class="btn btn-secondary btn-sm">Full Airspace &rarr;</a>
+                </div>
+                <div class="radar-content-grid">
+                    <div class="radar-canvas-container">
+                        <canvas id="radar-canvas" width="460" height="320" aria-label="Air corridor radar canvas"></canvas>
+                        <div class="radar-overlay-badge">LIVE RADAR FEED</div>
+                    </div>
+                    <div class="corridors-list-container">
+                        <div class="section-subheading" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3>Active Air Corridors</h3>
+                            <span class="badge badge-clear" th:text="${activeZonesCount} + ' Active'">2 Active</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Corridor Name</th>
+                                        <th>Type</th>
+                                        <th class="text-right">Altitude</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="zone : ${zones}">
+                                        <td><strong class="code-badge" th:text="${zone.zoneCode}">CORRIDOR-01</strong></td>
+                                        <td th:text="${zone.name}">North Metro Airway</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${zone.zoneType == 'CLEAR'} ? 'badge-clear' : (${zone.zoneType == 'CAUTION'} ? 'badge-caution' : 'badge-danger')"
+                                                  th:text="${zone.zoneType}">CLEAR</span>
+                                        </td>
+                                        <td class="text-right font-mono" th:text="${zone.minAltitude} + 'm - ' + ${zone.maxAltitude} + 'm'">100m - 400m</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${zone.isActive} ? 'badge-active' : 'badge-inactive'"
+                                                  th:text="${zone.isActive ? 'ACTIVE' : 'INACTIVE'}">ACTIVE</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(zones)}">
+                                        <td colspan="5" class="empty-state">No airspace corridors configured.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Vertiport Landing Pads Quick Status -->
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Landing Pads Status</h2>
+                        <p class="panel-subtitle">Current pad allocation and weight capacities</p>
+                    </div>
+                    <a th:href="@{/landing-pads}" class="btn btn-secondary btn-sm">Manage All Pads &rarr;</a>
+                </div>
+                <div class="pads-grid-mini">
+                    <div class="pad-mini-card" th:each="pad : ${landingPads}">
+                        <div class="pad-mini-header">
+                            <span class="pad-code" th:text="${pad.padCode}">PAD-01</span>
+                            <span class="badge" 
+                                  th:classappend="${pad.status == 'AVAILABLE'} ? 'badge-available' : (${pad.status == 'OCCUPIED'} ? 'badge-occupied' : 'badge-maintenance')"
+                                  th:text="${pad.status}">AVAILABLE</span>
+                        </div>
+                        <div class="pad-location" th:text="${pad.locationName}">Terminal Bay</div>
+                        <div class="pad-meta">
+                            <span>Max: <strong th:text="${pad.maxWeightCapacity} + ' kg'">50 kg</strong></span>
+                            <span class="pad-coords" th:text="${pad.latitude} + ', ' + ${pad.longitude}">37.77, -122.41</span>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(landingPads)}" class="empty-state">
+                        No landing pads registered yet.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Recent Docking Transactions Section -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Recent Vertiport Docking Activity</h2>
+                    <p class="panel-subtitle">Real-time check-in, check-out, and billing records</p>
+                </div>
+                <a th:href="@{/docking}" class="btn btn-secondary btn-sm">All Docking Records &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tx ID</th>
+                            <th>Drone</th>
+                            <th>Landing Pad</th>
+                            <th>Check-In Time</th>
+                            <th>Check-Out Time</th>
+                            <th>Status</th>
+                            <th class="text-right">Calculated Fee</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tx : ${dockingTransactions}">
+                            <td><strong class="code-badge font-mono" th:text="'#' + ${tx.id}">#1</strong></td>
+                            <td>
+                                <span th:if="${tx.drone != null}">
+                                    <strong th:text="${tx.drone.model}">SkyRider X4</strong>
+                                    <span class="sub-text font-mono" th:text="' (' + ${tx.drone.registrationNumber} + ')'"></span>
+                                </span>
+                                <span th:unless="${tx.drone != null}" class="text-muted">Unassigned</span>
+                            </td>
+                            <td>
+                                <span th:if="${tx.landingPad != null}" th:text="${tx.landingPad.padCode} + ' (' + ${tx.landingPad.locationName} + ')'">PAD-01</span>
+                                <span th:unless="${tx.landingPad != null}" class="text-muted">N/A</span>
+                            </td>
+                            <td class="font-mono text-muted" th:text="${tx.startTime != null} ? ${#temporals.format(tx.startTime, 'yyyy-MM-dd HH:mm')} : 'N/A'">2026-09-27 10:00</td>
+                            <td class="font-mono text-muted" th:text="${tx.endTime != null} ? ${#temporals.format(tx.endTime, 'yyyy-MM-dd HH:mm')} : '-'">-</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${tx.status == 'ACTIVE'} ? 'badge-active' : 'badge-completed'"
+                                      th:text="${tx.status}">ACTIVE</span>
+                            </td>
+                            <td class="text-right font-mono"><strong th:text="'$' + ${#numbers.formatDecimal(tx.feeAmount != null ? tx.feeAmount : 0, 1, 'COMMA', 2, 'POINT')}">$50.00</strong></td>
+                            <td class="text-right">
+                                <button th:if="${tx.status == 'ACTIVE'}" 
+                                        class="btn btn-primary btn-sm" 
+                                        th:onclick="'checkOutTransaction(' + ${tx.id} + ')'">Check-Out</button>
+                                <span th:unless="${tx.status == 'ACTIVE'}" class="text-muted font-mono">-</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(dockingTransactions)}">
+                            <td colspan="8" class="empty-state">No docking records available.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Highlight Bar -->
+            <div class="summary-highlight-bar">
+                <div>
+                    <div class="summary-title">Cumulative Vertiport Revenue Position</div>
+                    <div class="summary-subtitle">Audited gross revenue recognized across all docking settlements</div>
+                </div>
+                <div class="summary-value font-mono" th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">$0.00</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </main>
+
+    <!-- Modals & Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Fleet Aircraft Directory')}"></head>
+<body class="app-layout">
+    <!-- Fixed Left Sidebar for Navigation -->
+    <aside th:replace="~{fragments/layout :: sidebar('drones')}"></aside>
+
+    <!-- Main Content Area on the Right -->
+    <main class="main-content">
+        <!-- Top of Main Content Area -->
+        <header class="page-topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">Delivery Drone Fleet Directory</h1>
+                <p class="page-subtitle">Track registered aircraft, battery health, telemetry status, and assigned fleet operators</p>
+            </div>
+            <div class="topbar-right">
+                <div class="system-context-info">
+                    <span class="context-pill"><span class="status-dot"></span> FLEET ACTIVE</span>
+                    <span class="context-divider">|</span>
+                    <span class="context-date" id="live-date">--</span>
+                    <span class="context-divider">&bull;</span>
+                    <span class="context-clock font-mono" id="live-clock">--:--:-- UTC</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('add-drone-modal')">+ Register Drone</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Metric Summary Cards -->
+        <section class="metrics-row" aria-label="Fleet Metrics">
+            <div class="metric-card">
+                <div class="metric-icon cyan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Total Registered Fleet</span>
+                    <span class="metric-value font-mono" th:text="${totalDrones}">0</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon emerald">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Ready / Available</span>
+                    <span class="metric-value font-mono" th:text="${availableCount}">0</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon amber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">In Flight / Airway</span>
+                    <span class="metric-value font-mono" th:text="${inFlightCount}">0</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <div class="metric-info">
+                    <span class="metric-title">Currently Docked</span>
+                    <span class="metric-value font-mono" th:text="${dockedCount}">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fleet Table Panel -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Registered Aircraft Fleet</h2>
+                    <p class="panel-subtitle">Comprehensive listing of all operating unmanned aircraft systems</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Registration #</th>
+                            <th>Aircraft Model</th>
+                            <th>Battery Health</th>
+                            <th class="text-right">Battery Capacity</th>
+                            <th class="text-right">Payload Cap</th>
+                            <th>Operator</th>
+                            <th>Status</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="drone : ${drones}" th:id="'drone-row-' + ${drone.id}">
+                            <td><strong class="code-badge font-mono" th:text="${drone.registrationNumber}">DRONE-REG-101</strong></td>
+                            <td><strong th:text="${drone.model}">SkyRider X4</strong></td>
+                            <td>
+                                <div class="battery-indicator">
+                                    <div class="battery-bar-container">
+                                        <div class="battery-bar-fill" 
+                                             th:style="'width: ' + ${drone.currentBatteryLevel != null ? drone.currentBatteryLevel : 100} + '%;'"
+                                             th:classappend="${drone.currentBatteryLevel != null && drone.currentBatteryLevel < 30} ? 'battery-low' : (${drone.currentBatteryLevel != null && drone.currentBatteryLevel < 60} ? 'battery-med' : 'battery-high')">
+                                        </div>
+                                    </div>
+                                    <span class="battery-text font-mono" th:text="${drone.currentBatteryLevel != null ? drone.currentBatteryLevel + '%' : '100%'}">95%</span>
+                                </div>
+                            </td>
+                            <td class="text-right font-mono text-muted" th:text="${drone.batteryCapacity != null ? drone.batteryCapacity + ' Wh' : 'N/A'}">5000 Wh</td>
+                            <td class="text-right font-mono"><span class="capacity-tag" th:text="${drone.payloadCapacity} + ' kg'">15.5 kg</span></td>
+                            <td>
+                                <span th:if="${drone.operator != null}">
+                                    <strong th:text="${drone.operator.name}">AeroVelocity Logistics</strong>
+                                    <span class="sub-text block font-mono" th:text="${drone.operator.licenseNumber}">OP-LIC-001</span>
+                                </span>
+                                <span th:unless="${drone.operator != null}" class="text-muted">Unassigned</span>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${drone.status == 'AVAILABLE'} ? 'badge-available' : (${drone.status == 'IN_FLIGHT'} ? 'badge-in_flight' : (${drone.status == 'DOCKED'} ? 'badge-docked' : 'badge-maintenance'))"
+                                      th:text="${drone.status}">AVAILABLE</span>
+                            </td>
+                            <td class="text-right">
+                                <button class="btn btn-secondary btn-sm" th:onclick="'deleteDrone(' + ${drone.id} + ')'" title="Delete drone">Delete</button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(drones)}">
+                            <td colspan="8" class="empty-state">No drones found. Click "+ Register Drone" to register a new aircraft.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Highlight Bar -->
+            <div class="summary-highlight-bar">
+                <div>
+                    <div class="summary-title">Total Active Fleet Readiness</div>
+                    <div class="summary-subtitle">Commercial unmanned airframes cleared for autonomous vertiport operations</div>
+                </div>
+                <div class="summary-value font-mono">
+                    <span th:text="${availableCount}">0</span> / <span th:text="${totalDrones}">0</span> READY
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </main>
+
+    <!-- Register Drone Modal -->
+    <div class="modal-overlay" id="add-drone-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Register New Drone</h3>
+                <button class="modal-close" onclick="closeModal('add-drone-modal')">&times;</button>
+            </div>
+            <form id="add-drone-form" onsubmit="handleAddDrone(event)">
+                <div class="form-group">
+                    <label for="droneModel">Drone Model <span class="required">*</span></label>
+                    <input type="text" id="droneModel" required placeholder="e.g. AeroHawk V9 Pro" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="regNumber">Registration Number <span class="required">*</span></label>
+                    <input type="text" id="regNumber" required placeholder="e.g. DRONE-REG-505" class="form-control">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="batteryCapacity">Battery Capacity (Wh) <span class="required">*</span></label>
+                        <input type="number" id="batteryCapacity" value="8000" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="payloadCapacity">Payload Capacity (kg) <span class="required">*</span></label>
+                        <input type="number" step="0.1" id="payloadCapacity" value="20.0" required class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="operatorId">Assigned Fleet Operator <span class="required">*</span></label>
+                    <select id="operatorId" required class="form-control">
+                        <option value="">-- Select Operator --</option>
+                        <option th:each="op : ${operators}" th:value="${op.id}" th:text="${op.name} + ' (' + ${op.licenseNumber} + ')'">AeroVelocity Logistics</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-drone-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Aircraft</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

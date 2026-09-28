@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Finance & Accounting Directory')}"></head>
+<body class="app-layout">
+    <!-- Fixed Left Sidebar for Navigation -->
+    <aside th:replace="~{fragments/layout :: sidebar('finance')}"></aside>
+
+    <!-- Main Content Area on the Right -->
+    <main class="main-content">
+        <!-- Top of Main Content Area -->
+        <header class="page-topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">Finance &amp; Accounting Directory</h1>
+                <p class="page-subtitle">Vertiport revenue streams, general ledger, vendor procurement, and billing management</p>
+            </div>
+            <div class="topbar-right">
+                <div class="system-context-info">
+                    <span class="context-pill"><span class="status-dot"></span> GENERAL LEDGER</span>
+                    <span class="context-divider">|</span>
+                    <span class="context-date" id="live-date">--</span>
+                    <span class="context-divider">&bull;</span>
+                    <span class="context-clock font-mono" id="live-clock">--:--:-- UTC</span>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/reports}" class="btn btn-primary">View Financial Statements &rarr;</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Finance Main Container -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Financial Entities Directory</h2>
+                    <p class="panel-subtitle">Select ledger category to view operational accounting registers</p>
+                </div>
+            </div>
+
+            <!-- Underline-Style Tabs -->
+            <div class="sub-tabs" role="tablist">
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'products' or currentTab == null} ? 'active' : ''" onclick="switchFinanceSubTab('fin-products')">Products Master</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'accounts'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-accounts')">Chart of Accounts</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'sales-orders'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-sales-orders')">Sales Orders</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'invoices'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-invoices')">Customer Invoices</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'purchase-orders'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-purchase-orders')">Purchase Orders</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'bills'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-bills')">Vendor Bills</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'payments'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-payments')">Payments</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'vendors'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-vendors')">Vendors</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'budgets'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-budgets')">Budgets</button>
+                <button class="sub-tab-btn" th:classappend="${currentTab == 'ledger'} ? 'active' : ''" onclick="switchFinanceSubTab('fin-ledger')">Journal Ledger</button>
+            </div>
+
+            <!-- 1. Products Master -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'products' or currentTab == null} ? 'active' : ''" id="fin-products">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Product Code</th>
+                                <th>Service / Product Name</th>
+                                <th>Category</th>
+                                <th class="text-right">Unit Price</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="prod : ${products}">
+                                <td><strong class="code-badge font-mono" th:text="${prod.code}">PROD-01</strong></td>
+                                <td><strong th:text="${prod.name}">Vertiport Docking Fee</strong></td>
+                                <td><span class="badge badge-info" th:text="${prod.category}">SERVICE</span></td>
+                                <td class="text-right font-mono"><strong class="text-emerald" th:text="'$' + ${#numbers.formatDecimal(prod.unitPrice, 1, 'COMMA', 2, 'POINT')}">$75.00</strong></td>
+                                <td class="text-secondary" th:text="${prod.description}">Hourly reservation fee</td>
+                                <td>
+                                    <span class="badge" th:classappend="${prod.active} ? 'badge-active' : 'badge-inactive'" th:text="${prod.active ? 'ACTIVE' : 'INACTIVE'}">ACTIVE</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(products)}">
+                                <td colspan="6" class="empty-state">No products registered in catalog.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. Chart of Accounts -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'accounts'} ? 'active' : ''" id="fin-accounts">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Account Code</th>
+                                <th>Account Title</th>
+                                <th>Classification Type</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="acc : ${accounts}">
+                                <td><strong class="code-badge font-mono" th:text="${acc.accountCode}">1000</strong></td>
+                                <td><strong th:text="${acc.accountName}">Cash on Hand</strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${acc.accountType == 'ASSET'} ? 'badge-clear' : (${acc.accountType == 'INCOME'} ? 'badge-available' : (${acc.accountType == 'EXPENSE'} ? 'badge-danger' : 'badge-caution'))"
+                                          th:text="${acc.accountType}">ASSET</span>
+                                </td>
+                                <td class="text-secondary" th:text="${acc.description}">Operational cash balance</td>
+                                <td>
+                                    <span class="badge" th:classappend="${acc.active} ? 'badge-active' : 'badge-inactive'" th:text="${acc.active ? 'ACTIVE' : 'INACTIVE'}">ACTIVE</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(accounts)}">
+                                <td colspan="5" class="empty-state">No chart of accounts found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Sales Orders -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'sales-orders'} ? 'active' : ''" id="fin-sales-orders">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>SO Number</th>
+                                <th>Fleet Operator</th>
+                                <th>Order Date</th>
+                                <th>Product / Service</th>
+                                <th class="text-right">Qty</th>
+                                <th class="text-right">Unit Price</th>
+                                <th class="text-right">Total Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="so : ${salesOrders}">
+                                <td><strong class="code-badge font-mono" th:text="${so.orderNumber}">SO-2026-701</strong></td>
+                                <td><strong th:text="${so.operator != null ? so.operator.name : 'N/A'}">AeroVelocity Logistics</strong></td>
+                                <td class="font-mono text-muted" th:text="${so.orderDate != null ? #temporals.format(so.orderDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-26</td>
+                                <td th:text="${so.product != null ? so.product.name : 'N/A'}">Vertiport Docking Fee</td>
+                                <td class="text-right font-mono" th:text="${so.quantity}">5</td>
+                                <td class="text-right font-mono" th:text="'$' + ${#numbers.formatDecimal(so.unitPrice != null ? so.unitPrice : 0, 1, 'COMMA', 2, 'POINT')}">$75.00</td>
+                                <td class="text-right font-mono"><strong class="text-emerald" th:text="'$' + ${#numbers.formatDecimal(so.totalAmount != null ? so.totalAmount : 0, 1, 'COMMA', 2, 'POINT')}">$375.00</strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${so.status == 'CONFIRMED' or so.status == 'COMPLETED'} ? 'badge-active' : 'badge-caution'"
+                                          th:text="${so.status}">CONFIRMED</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(salesOrders)}">
+                                <td colspan="8" class="empty-state">No sales orders found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Customer Invoices -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'invoices'} ? 'active' : ''" id="fin-invoices">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Customer Account</th>
+                                <th>Contact Email</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th class="text-right">Total Amount</th>
+                                <th>Payment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="inv : ${invoices}">
+                                <td><strong class="code-badge font-mono" th:text="${inv.invoiceNumber}">INV-2026-001</strong></td>
+                                <td><strong th:text="${inv.customerName}">Global Retail Logistics</strong></td>
+                                <td class="font-mono text-secondary" th:text="${inv.customerEmail}">billing@globalretail.com</td>
+                                <td class="font-mono text-muted" th:text="${inv.issueDate != null ? #temporals.format(inv.issueDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-25</td>
+                                <td class="font-mono text-muted" th:text="${inv.dueDate != null ? #temporals.format(inv.dueDate, 'yyyy-MM-dd') : 'N/A'}">2026-10-25</td>
+                                <td class="text-right font-mono"><strong class="text-emerald" th:text="'$' + ${#numbers.formatDecimal(inv.totalAmount != null ? inv.totalAmount : 0, 1, 'COMMA', 2, 'POINT')}">$350.00</strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${inv.status == 'PAID'} ? 'badge-active' : (${inv.status == 'OVERDUE'} ? 'badge-danger' : 'badge-caution')"
+                                          th:text="${inv.status}">PAID</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(invoices)}">
+                                <td colspan="7" class="empty-state">No customer invoices issued.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 5. Purchase Orders -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'purchase-orders'} ? 'active' : ''" id="fin-purchase-orders">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>PO Number</th>
+                                <th>Vendor Supplier</th>
+                                <th>Order Date</th>
+                                <th>Delivery Date</th>
+                                <th class="text-right">Total Amount</th>
+                                <th>Scope / Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="po : ${purchaseOrders}">
+                                <td><strong class="code-badge font-mono" th:text="${po.poNumber}">PO-2026-8801</strong></td>
+                                <td><strong th:text="${po.vendor != null ? po.vendor.name : 'N/A'}">AeroTech Maintenance Co</strong></td>
+                                <td class="font-mono text-muted" th:text="${po.orderDate != null ? #temporals.format(po.orderDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-22</td>
+                                <td class="font-mono text-muted" th:text="${po.expectedDeliveryDate != null ? #temporals.format(po.expectedDeliveryDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-29</td>
+                                <td class="text-right font-mono"><strong th:text="'$' + ${#numbers.formatDecimal(po.totalAmount != null ? po.totalAmount : 0, 1, 'COMMA', 2, 'POINT')}">$2,500.00</strong></td>
+                                <td class="text-secondary" th:text="${po.description}">Replacement battery modules</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${po.status == 'APPROVED'} ? 'badge-active' : (${po.status == 'CANCELLED'} ? 'badge-danger' : 'badge-caution')"
+                                          th:text="${po.status}">APPROVED</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(purchaseOrders)}">
+                                <td colspan="7" class="empty-state">No purchase orders found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. Vendor Bills -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'bills'} ? 'active' : ''" id="fin-bills">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Bill Number</th>
+                                <th>Vendor</th>
+                                <th>PO Reference</th>
+                                <th>Bill Date</th>
+                                <th>Due Date</th>
+                                <th class="text-right">Total Amount</th>
+                                <th>Payment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="bill : ${vendorBills}">
+                                <td><strong class="code-badge font-mono" th:text="${bill.billNumber}">BILL-2026-901</strong></td>
+                                <td><strong th:text="${bill.vendor != null ? bill.vendor.name : 'N/A'}">AeroTech Maintenance Co</strong></td>
+                                <td class="font-mono text-secondary" th:text="${bill.purchaseOrder != null ? bill.purchaseOrder.poNumber : '-'}">PO-2026-8801</td>
+                                <td class="font-mono text-muted" th:text="${bill.billDate != null ? #temporals.format(bill.billDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-26</td>
+                                <td class="font-mono text-muted" th:text="${bill.dueDate != null ? #temporals.format(bill.dueDate, 'yyyy-MM-dd') : 'N/A'}">2026-10-11</td>
+                                <td class="text-right font-mono"><strong class="text-rose" th:text="'$' + ${#numbers.formatDecimal(bill.totalAmount != null ? bill.totalAmount : 0, 1, 'COMMA', 2, 'POINT')}">$2,500.00</strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${bill.status == 'PAID'} ? 'badge-active' : 'badge-caution'"
+                                          th:text="${bill.status}">PENDING</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(vendorBills)}">
+                                <td colspan="7" class="empty-state">No vendor bills recorded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 7. Payments -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'payments'} ? 'active' : ''" id="fin-payments">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction Reference</th>
+                                <th>Payment Date</th>
+                                <th class="text-right">Settled Amount</th>
+                                <th>Payment Method</th>
+                                <th>Payment Classification</th>
+                                <th>Associated Document</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pmt : ${payments}">
+                                <td><strong class="code-badge font-mono" th:text="${pmt.transactionReference}">PAY-TXN-99001</strong></td>
+                                <td class="font-mono text-muted" th:text="${pmt.paymentDate != null ? #temporals.format(pmt.paymentDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-26</td>
+                                <td class="text-right font-mono"><strong class="text-emerald" th:text="'$' + ${#numbers.formatDecimal(pmt.amount != null ? pmt.amount : 0, 1, 'COMMA', 2, 'POINT')}">$350.00</strong></td>
+                                <td><span class="badge badge-info" th:text="${pmt.paymentMethod}">BANK_TRANSFER</span></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${pmt.paymentType == 'CUSTOMER_INCOME'} ? 'badge-active' : 'badge-danger'"
+                                          th:text="${pmt.paymentType}">CUSTOMER_INCOME</span>
+                                </td>
+                                <td class="font-mono text-secondary">
+                                    <span th:if="${pmt.customerInvoice != null}" th:text="'Inv: ' + ${pmt.customerInvoice.invoiceNumber}"></span>
+                                    <span th:if="${pmt.vendorBill != null}" th:text="'Bill: ' + ${pmt.vendorBill.billNumber}"></span>
+                                    <span th:if="${pmt.customerInvoice == null and pmt.vendorBill == null}">-</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(payments)}">
+                                <td colspan="6" class="empty-state">No payment settlements found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 8. Vendors -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'vendors'} ? 'active' : ''" id="fin-vendors">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Vendor Organization</th>
+                                <th>Category / Type</th>
+                                <th>Contact Email</th>
+                                <th>Phone</th>
+                                <th>Registered Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="v : ${vendors}">
+                                <td><strong th:text="${v.name}">AeroTech Maintenance Co</strong></td>
+                                <td><span class="badge badge-info" th:text="${v.vendorType}">MAINTENANCE</span></td>
+                                <td class="font-mono text-secondary" th:text="${v.contactEmail}">support@aerotech.com</td>
+                                <td class="font-mono text-muted" th:text="${v.phone}">+1-800-555-9000</td>
+                                <td class="text-secondary" th:text="${v.address}">100 Aviation Way</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(vendors)}">
+                                <td colspan="5" class="empty-state">No approved vendors registered.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 9. Budgets -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'budgets'} ? 'active' : ''" id="fin-budgets">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fiscal Year</th>
+                                <th>Airspace Sector / Department</th>
+                                <th class="text-right">Allocated Amount</th>
+                                <th class="text-right">Spent Amount</th>
+                                <th class="text-right">Remaining Balance</th>
+                                <th>Approval Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${budgets}">
+                                <td><strong class="font-mono" th:text="${b.fiscalYear}">2026</strong></td>
+                                <td><strong th:text="${b.department}">Urban Airspace Sector 1</strong></td>
+                                <td class="text-right font-mono text-secondary" th:text="'$' + ${#numbers.formatDecimal(b.allocatedAmount != null ? b.allocatedAmount : 0, 1, 'COMMA', 2, 'POINT')}">$500,000.00</td>
+                                <td class="text-right font-mono text-rose" th:text="'$' + ${#numbers.formatDecimal(b.spentAmount != null ? b.spentAmount : 0, 1, 'COMMA', 2, 'POINT')}">$125,000.00</td>
+                                <td class="text-right font-mono"><strong class="text-emerald" th:text="'$' + ${#numbers.formatDecimal(b.remainingAmount != null ? b.remainingAmount : 0, 1, 'COMMA', 2, 'POINT')}">$375,000.00</strong></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${b.status == 'APPROVED'} ? 'badge-active' : (${b.status == 'EXCEEDED'} ? 'badge-danger' : 'badge-caution')"
+                                          th:text="${b.status}">APPROVED</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(budgets)}">
+                                <td colspan="6" class="empty-state">No budgets allocated for current fiscal year.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 10. Journal Ledger -->
+            <div class="sub-tab-content" th:classappend="${currentTab == 'ledger'} ? 'active' : ''" id="fin-ledger">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Entry Date</th>
+                                <th>Entry Type</th>
+                                <th>Journal</th>
+                                <th>Account Code</th>
+                                <th class="text-right">Debit ($)</th>
+                                <th class="text-right">Credit ($)</th>
+                                <th>Category</th>
+                                <th>Description / Memo</th>
+                                <th>Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="entry : ${ledgerEntries}">
+                                <td class="font-mono text-muted" th:text="${entry.entryDate != null ? #temporals.format(entry.entryDate, 'yyyy-MM-dd') : 'N/A'}">2026-09-26</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${entry.entryType == 'REVENUE'} ? 'badge-active' : 'badge-danger'"
+                                          th:text="${entry.entryType}">REVENUE</span>
+                                </td>
+                                <td><span class="badge badge-info" th:text="${entry.journalType}">SALES</span></td>
+                                <td><strong class="code-badge font-mono" th:text="${entry.accountCode}">4000</strong></td>
+                                <td class="text-right font-mono text-rose" th:text="${entry.debit != null && entry.debit > 0 ? '$' + #numbers.formatDecimal(entry.debit, 1, 'COMMA', 2, 'POINT') : '-'}">-</td>
+                                <td class="text-right font-mono text-emerald" th:text="${entry.credit != null && entry.credit > 0 ? '$' + #numbers.formatDecimal(entry.credit, 1, 'COMMA', 2, 'POINT') : '-'}">$350.00</td>
+                                <td class="text-secondary" th:text="${entry.category}">DOCKING_FEE</td>
+                                <td class="text-secondary" th:text="${entry.description}">Customer invoice payment received</td>
+                                <td class="font-mono text-muted" th:text="${entry.referenceId}">INV-2026-001</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(ledgerEntries)}">
+                                <td colspan="9" class="empty-state">No journal ledger transactions recorded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer th:replace="~{fragments/layout :: footer}"></footer>
+    </main>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
